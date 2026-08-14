@@ -1,0 +1,9 @@
+2026-08-15 10:30:21 ERROR PaymentService
+
+java.lang.NullPointerException
+
+    at com.example.payment.PaymentService.process(PaymentService.java:45)
+
+2026-08-15 10:30:22 ERROR PaymentService
+
+Payment transaction failed.
