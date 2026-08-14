@@ -1,4 +1,4 @@
-package com.sumeet.resolveai;
+package com.sumeetsingh.resolveai;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

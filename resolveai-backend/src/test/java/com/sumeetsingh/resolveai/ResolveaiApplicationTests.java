@@ -1,4 +1,4 @@
-package com.sumeet.resolveai;
+package com.sumeetsingh.resolveai;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
