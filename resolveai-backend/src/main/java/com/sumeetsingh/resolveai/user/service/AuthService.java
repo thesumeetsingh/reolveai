@@ -1,5 +1,6 @@
 package com.sumeetsingh.resolveai.user.service;
 
+import com.sumeetsingh.resolveai.security.JwtService;
 import com.sumeetsingh.resolveai.user.dto.LoginRequest;
 import com.sumeetsingh.resolveai.user.dto.LoginResponse;
 import com.sumeetsingh.resolveai.user.dto.RegisterRequest;
@@ -8,10 +9,15 @@ import com.sumeetsingh.resolveai.user.entity.Role;
 import com.sumeetsingh.resolveai.user.entity.User;
 import com.sumeetsingh.resolveai.user.repository.RoleRepository;
 import com.sumeetsingh.resolveai.user.repository.UserRepository;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -21,15 +27,21 @@ public class AuthService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     public AuthService(
             UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            AuthenticationManager authenticationManager,
+            JwtService jwtService
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     @Transactional
@@ -75,17 +87,23 @@ public class AuthService {
     }
     public LoginResponse login(LoginRequest request) {
 
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() ->
-                        new IllegalArgumentException("Invalid username or password")
+        Authentication authentication =
+                authenticationManager.authenticate(
+                        new UsernamePasswordAuthenticationToken(
+                                request.getUsername(),
+                                request.getPassword()
+                        )
                 );
 
-        if (!passwordEncoder.matches(
-                request.getPassword(),
-                user.getPasswordHash()
-        )) {
-            throw new IllegalArgumentException("Invalid username or password");
-        }
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("User not found")
+                );
+
+        UserDetails userDetails =
+                (UserDetails) authentication.getPrincipal();
+
+        String token = jwtService.generateToken(userDetails);
 
         Set<String> roles = user.getRoles()
                 .stream()
@@ -98,7 +116,8 @@ public class AuthService {
                 user.getEmail(),
                 user.getFirstName(),
                 user.getLastName(),
-                roles
+                roles,
+                token
         );
     }
 }

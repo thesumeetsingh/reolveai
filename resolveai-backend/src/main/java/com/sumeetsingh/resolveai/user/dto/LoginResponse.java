@@ -10,6 +10,7 @@ public class LoginResponse {
     private String firstName;
     private String lastName;
     private Set<String> roles;
+    private String token;
 
     public LoginResponse(
             Long userId,
@@ -17,7 +18,8 @@ public class LoginResponse {
             String email,
             String firstName,
             String lastName,
-            Set<String> roles
+            Set<String> roles,
+            String token
     ) {
         this.userId = userId;
         this.username = username;
@@ -25,8 +27,11 @@ public class LoginResponse {
         this.firstName = firstName;
         this.lastName = lastName;
         this.roles = roles;
+        this.token = token;
     }
-
+    public String getToken() {
+        return token;
+    }
     public Long getUserId() {
         return userId;
     }
