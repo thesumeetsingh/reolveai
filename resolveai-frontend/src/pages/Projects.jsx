@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import {
   ArrowRight,
@@ -8,7 +8,10 @@ import {
   X,
 } from "lucide-react";
 
-import { Link } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
 
 import {
   createProject,
@@ -18,6 +21,7 @@ import {
 import "./Projects.css";
 
 export default function Projects() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -33,7 +37,7 @@ export default function Projects() {
     repositoryUrl: "",
   });
 
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -54,11 +58,12 @@ export default function Projects() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProjects();
-  }, []);
+  }, [loadProjects]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -101,6 +106,7 @@ export default function Projects() {
       });
 
       setCreating(false);
+      navigate(`/projects/${createdProject.projectId}`);
     } catch (err) {
       console.error(
         "Failed to create project:",

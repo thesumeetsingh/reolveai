@@ -3,34 +3,73 @@ import { useEffect, useState } from "react";
 import {
   Activity,
   AlertCircle,
+  ArrowRight,
   CheckCircle2,
   FolderKanban,
+  Plus,
   ShieldAlert,
 } from "lucide-react";
 
+import { Link } from "react-router-dom";
+
 import { useAuth } from "../context/AuthContext";
 import { getEmployeeDashboard } from "../services/dashboardService";
+import { getProjects } from "../services/projectService";
 
 import "./Dashboard.css";
 
-function getDashboardValue(data, keys) {
-  for (const key of keys) {
-    if (
-      data &&
-      data[key] !== undefined &&
-      data[key] !== null
-    ) {
-      return data[key];
-    }
+function formatDate(value) {
+  if (!value) {
+    return "";
   }
 
-  return 0;
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return date.toLocaleDateString(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getIncidentProject(incident) {
+  return (
+    incident?.project?.projectName ||
+    incident?.project?.name ||
+    incident?.projectName ||
+    "Project"
+  );
+}
+
+function getIncidentProjectCode(incident) {
+  return (
+    incident?.project?.projectCode ||
+    incident?.projectCode ||
+    ""
+  );
+}
+
+function getSeverityClass(severity) {
+  return `incident-severity incident-severity-${String(
+    severity || "medium"
+  ).toLowerCase()}`;
+}
+
+function getStatusClass(status) {
+  return `incident-status incident-status-${String(
+    status || "open"
+  ).toLowerCase()}`;
 }
 
 export default function Dashboard() {
   const { user } = useAuth();
 
   const [dashboard, setDashboard] = useState(null);
+  const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -40,18 +79,23 @@ export default function Dashboard() {
         setLoading(true);
         setError("");
 
-        const data =
-          await getEmployeeDashboard();
+        const [dashboardData, projectData] =
+          await Promise.all([
+            getEmployeeDashboard(),
+            getProjects(),
+          ]);
 
-        setDashboard(data);
+        setDashboard(dashboardData);
+        setProjects(projectData || []);
       } catch (err) {
         console.error(
-          "Failed to load employee dashboard:",
+          "Failed to load dashboard:",
           err
         );
 
         setError(
-          "Unable to load dashboard data."
+          err.response?.data?.message ||
+            "Unable to load dashboard data."
         );
       } finally {
         setLoading(false);
@@ -63,58 +107,35 @@ export default function Dashboard() {
 
   const stats = [
     {
-      label: "Active Projects",
-      value: getDashboardValue(
-        dashboard,
-        [
-          "activeProjects",
-          "totalActiveProjects",
-          "projectCount",
-        ]
-      ),
+      label: "My Projects",
+      value: dashboard?.myProjects ?? 0,
       icon: FolderKanban,
       type: "normal",
     },
     {
       label: "Open Incidents",
-      value: getDashboardValue(
-        dashboard,
-        [
-          "openIncidents",
-          "totalOpenIncidents",
-          "assignedOpenIncidents",
-        ]
-      ),
+      value: dashboard?.openIncidents ?? 0,
       icon: Activity,
       type: "normal",
     },
     {
       label: "Critical Incidents",
-      value: getDashboardValue(
-        dashboard,
-        [
-          "criticalIncidents",
-          "totalCriticalIncidents",
-          "assignedCriticalIncidents",
-        ]
-      ),
+      value: dashboard?.criticalIncidents ?? 0,
       icon: ShieldAlert,
       type: "critical",
     },
     {
       label: "Resolved Incidents",
-      value: getDashboardValue(
-        dashboard,
-        [
-          "resolvedIncidents",
-          "totalResolvedIncidents",
-          "assignedResolvedIncidents",
-        ]
-      ),
+      value: dashboard?.resolvedIncidents ?? 0,
       icon: CheckCircle2,
       type: "success",
     },
   ];
+
+  const recentIncidents =
+    dashboard?.recentReportedIncidents || [];
+
+  const visibleProjects = projects.slice(0, 5);
 
   return (
     <div className="dashboard">
@@ -139,6 +160,14 @@ export default function Dashboard() {
             and get AI-assisted technical support.
           </p>
         </div>
+
+        <Link
+          to="/support/new"
+          className="dashboard-primary-action"
+        >
+          <Plus size={15} />
+          Create support request
+        </Link>
 
       </section>
 
@@ -181,7 +210,9 @@ export default function Dashboard() {
                     : ""
                 }`}
               >
-                {loading ? "—" : stat.value}
+                {loading
+                  ? "—"
+                  : stat.value}
               </strong>
 
             </div>
@@ -192,77 +223,250 @@ export default function Dashboard() {
 
       <section className="dashboard-grid">
 
+        {/* RECENT INCIDENTS */}
+
         <div className="dashboard-panel">
 
           <div className="panel-header">
 
             <div>
-              <h2>Recent incidents</h2>
+              <h2>
+                Recent incidents
+              </h2>
 
               <p>
-                Your latest incident activity
+                Your latest reported incidents
               </p>
             </div>
 
-            <button className="panel-action">
-              View all
-            </button>
+            <div className="dashboard-panel-actions">
+              <Link
+                to="/support"
+                className="panel-action"
+              >
+                View all
+              </Link>
 
-          </div>
-
-          <div className="empty-state">
-
-            <div className="empty-state-icon">
-              <AlertCircle size={20} />
+              <Link
+                to="/support/new"
+                className="panel-action"
+              >
+                Create request
+              </Link>
             </div>
 
-            <h3>No incidents yet</h3>
-
-            <p>
-              Incidents created for your projects
-              will appear here.
-            </p>
-
           </div>
+
+          {loading ? (
+            <div className="dashboard-list-state">
+              <div className="dashboard-small-spinner" />
+              <span>
+                Loading incidents...
+              </span>
+            </div>
+          ) : recentIncidents.length === 0 ? (
+            <div className="empty-state">
+
+              <div className="empty-state-icon">
+                <AlertCircle size={20} />
+              </div>
+
+              <h3>
+                No incidents yet
+              </h3>
+
+              <p>
+                Incidents reported for your
+                projects will appear here.
+              </p>
+
+            </div>
+          ) : (
+            <div className="incident-list">
+
+              {recentIncidents.map(
+                (incident) => (
+                  <Link
+                    to={`/incidents/${incident.supportRequestId}`}
+                    className="incident-row"
+                    key={
+                      incident.supportRequestId ||
+                      incident.ticketNumber
+                    }
+                  >
+
+                    <div className="incident-row-main">
+
+                      <div className="incident-row-title">
+                        {incident.title ||
+                          "Untitled incident"}
+                      </div>
+
+                      <div className="incident-row-meta">
+
+                        <span>
+                          {incident.ticketNumber ||
+                            "No ticket number"}
+                        </span>
+
+                        <span>
+                          {getIncidentProjectCode(
+                            incident
+                          )}
+
+                          {getIncidentProjectCode(
+                            incident
+                          )
+                            ? " — "
+                            : ""}
+
+                          {getIncidentProject(
+                            incident
+                          )}
+                        </span>
+
+                        <span>
+                          {formatDate(
+                            incident.createdAt
+                          )}
+                        </span>
+
+                      </div>
+
+                    </div>
+
+                    <div className="incident-row-right">
+
+                      <span
+                        className={getSeverityClass(
+                          incident.severity
+                        )}
+                      >
+                        {incident.severity ||
+                          "MEDIUM"}
+                      </span>
+
+                      <span
+                        className={getStatusClass(
+                          incident.status
+                        )}
+                      >
+                        {incident.status ||
+                          "OPEN"}
+                      </span>
+
+                    </div>
+
+                  </Link>
+                )
+              )}
+
+            </div>
+          )}
 
         </div>
 
+
+        {/* PROJECTS */}
+
         <div className="dashboard-panel">
 
           <div className="panel-header">
 
             <div>
-              <h2>Projects</h2>
+              <h2>
+                Projects
+              </h2>
 
               <p>
-                Your active projects
+                Your projects
               </p>
             </div>
 
-            <button className="panel-action">
+            <Link
+              to="/projects"
+              className="panel-action"
+            >
               View all
-            </button>
+            </Link>
 
           </div>
 
-          <div className="empty-state">
-
-            <div className="empty-state-icon">
-              <FolderKanban size={20} />
+          {loading ? (
+            <div className="dashboard-list-state">
+              <div className="dashboard-small-spinner" />
+              <span>
+                Loading projects...
+              </span>
             </div>
+          ) : visibleProjects.length === 0 ? (
+            <div className="empty-state">
 
-            <h3>
-              {loading
-                ? "Loading projects"
-                : "No projects yet"}
-            </h3>
+              <div className="empty-state-icon">
+                <FolderKanban size={20} />
+              </div>
 
-            <p>
-              Create or join a project to
-              start managing incidents.
-            </p>
+              <h3>
+                No projects yet
+              </h3>
 
-          </div>
+              <p>
+                Create or join a project to start
+                managing incidents and support.
+              </p>
+
+              <Link
+                to="/projects"
+                className="empty-state-link"
+              >
+                Open projects
+                <ArrowRight size={14} />
+              </Link>
+
+            </div>
+          ) : (
+            <div className="dashboard-project-list">
+
+              {visibleProjects.map(
+                (project) => (
+                  <Link
+                    key={project.projectId}
+                    to={`/projects/${project.projectId}`}
+                    className="dashboard-project-row"
+                  >
+
+                    <div className="dashboard-project-icon">
+                      <FolderKanban size={16} />
+                    </div>
+
+                    <div className="dashboard-project-info">
+
+                      <strong>
+                        {project.projectName}
+                      </strong>
+
+                      <span>
+                        {project.projectCode}
+                      </span>
+
+                    </div>
+
+                    <span
+                      className={`dashboard-project-status status-${String(
+                        project.status
+                      ).toLowerCase()}`}
+                    >
+                      {project.status}
+                    </span>
+
+                    <ArrowRight size={14} />
+
+                  </Link>
+                )
+              )}
+
+            </div>
+          )}
 
         </div>
 

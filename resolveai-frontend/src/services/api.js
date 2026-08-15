@@ -11,6 +11,15 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
+    // The Axios instance defaults to JSON for normal API calls.
+    // Multipart uploads must let the browser set the multipart boundary.
+    if (
+      typeof FormData !== "undefined" &&
+      config.data instanceof FormData
+    ) {
+      delete config.headers["Content-Type"];
+    }
+
     let token =
       localStorage.getItem("resolveai-token") ||
       localStorage.getItem("token") ||

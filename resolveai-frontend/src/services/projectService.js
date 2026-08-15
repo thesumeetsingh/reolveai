@@ -42,3 +42,74 @@ export const getProjectServices = async (
 
   return response.data;
 };
+
+export const searchEmployees = async (search = "") => {
+  const response = await api.get(
+    "/users/employees",
+    {
+      params: {
+        search,
+      },
+    }
+  );
+
+  return response.data;
+};
+
+export const addProjectMember = async (
+  projectId,
+  requestData
+) => {
+  const response = await api.post(
+    `/projects/${projectId}/members`,
+    requestData
+  );
+
+  return response.data;
+};
+
+export const updateProjectMemberRole = async (
+  projectId,
+  userId,
+  requestData
+) => {
+  const response = await api.put(
+    `/projects/${projectId}/members/${userId}`,
+    requestData
+  );
+
+  return response.data;
+};
+
+export const removeProjectMember = async (
+  projectId,
+  userId
+) => {
+  await api.delete(
+    `/projects/${projectId}/members/${userId}`
+  );
+};
+
+export const addProjectTechnology = async (
+  projectId,
+  requestData
+) => {
+  const response = await api.post(
+    `/projects/${projectId}/technologies`,
+    requestData
+  );
+
+  return response.data;
+};
+
+export const addProjectService = async (
+  projectId,
+  requestData
+) => {
+  const response = await api.post(
+    `/projects/${projectId}/services`,
+    requestData
+  );
+
+  return response.data;
+};

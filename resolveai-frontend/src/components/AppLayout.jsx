@@ -1,6 +1,6 @@
 import { useState } from "react";
+
 import {
-  Activity,
   ChevronLeft,
   ChevronRight,
   ClipboardList,
@@ -10,11 +10,14 @@ import {
   Moon,
   Settings,
   Sun,
-  User,
   X,
 } from "lucide-react";
 
-import { Outlet, NavLink } from "react-router-dom";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
@@ -22,16 +25,29 @@ import { useTheme } from "../context/ThemeContext";
 import "./AppLayout.css";
 
 export default function AppLayout() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] =
+    useState(false);
 
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const [profileOpen, setProfileOpen] =
+    useState(false);
+
+  const {
+    user,
+    logout,
+  } = useAuth();
+
+  const {
+    theme,
+    toggleTheme,
+  } = useTheme();
+
+  const navigate = useNavigate();
 
   const isAdmin =
     user?.authorities?.some(
       (authority) =>
-        authority.authority === "ROLE_ADMIN"
+        authority.authority ===
+        "ROLE_ADMIN"
     ) ?? false;
 
   const navigation = [
@@ -44,11 +60,6 @@ export default function AppLayout() {
       label: "Projects",
       path: "/projects",
       icon: FolderKanban,
-    },
-    {
-      label: "Incidents",
-      path: "/incidents",
-      icon: Activity,
     },
     {
       label: "Support Requests",
@@ -65,6 +76,12 @@ export default function AppLayout() {
     });
   }
 
+  const handleLogout = () => {
+    setProfileOpen(false);
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div
       className={`app-layout ${
@@ -73,11 +90,13 @@ export default function AppLayout() {
           : ""
       }`}
     >
+
       <aside className="sidebar">
 
         <div className="sidebar-header">
 
           <div className="sidebar-brand">
+
             <div className="brand-mark">
               R
             </div>
@@ -87,6 +106,7 @@ export default function AppLayout() {
                 ResolveAI
               </span>
             )}
+
           </div>
 
           <button
@@ -96,11 +116,7 @@ export default function AppLayout() {
                 (current) => !current
               )
             }
-            aria-label={
-              sidebarCollapsed
-                ? "Expand sidebar"
-                : "Collapse sidebar"
-            }
+            aria-label="Toggle sidebar"
           >
             {sidebarCollapsed ? (
               <ChevronRight size={17} />
@@ -121,34 +137,41 @@ export default function AppLayout() {
               </span>
             )}
 
-            {navigation.map((item) => {
-              const Icon = item.icon;
+            {navigation.map(
+              (item) => {
+                const Icon =
+                  item.icon;
 
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  className={({ isActive }) =>
-                    `navigation-item ${
-                      isActive
-                        ? "navigation-item-active"
-                        : ""
-                    }`
-                  }
-                  title={
-                    sidebarCollapsed
-                      ? item.label
-                      : undefined
-                  }
-                >
-                  <Icon size={18} />
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={({
+                      isActive,
+                    }) =>
+                      `navigation-item ${
+                        isActive
+                          ? "navigation-item-active"
+                          : ""
+                      }`
+                    }
+                    title={
+                      sidebarCollapsed
+                        ? item.label
+                        : undefined
+                    }
+                  >
+                    <Icon size={18} />
 
-                  {!sidebarCollapsed && (
-                    <span>{item.label}</span>
-                  )}
-                </NavLink>
-              );
-            })}
+                    {!sidebarCollapsed && (
+                      <span>
+                        {item.label}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              }
+            )}
 
           </div>
 
@@ -159,7 +182,9 @@ export default function AppLayout() {
           {!sidebarCollapsed && (
             <div className="sidebar-status">
               <span className="status-dot" />
-              <span>System operational</span>
+              <span>
+                System operational
+              </span>
             </div>
           )}
 
@@ -217,7 +242,8 @@ export default function AppLayout() {
                 <div className="profile-avatar">
                   {user?.username
                     ?.charAt(0)
-                    ?.toUpperCase() || "U"}
+                    ?.toUpperCase() ||
+                    "U"}
                 </div>
               </button>
 
@@ -229,12 +255,14 @@ export default function AppLayout() {
                     <div className="profile-menu-avatar">
                       {user?.username
                         ?.charAt(0)
-                        ?.toUpperCase() || "U"}
+                        ?.toUpperCase() ||
+                        "U"}
                     </div>
 
                     <div>
                       <strong>
-                        {user?.username || "User"}
+                        {user?.username ||
+                          "User"}
                       </strong>
 
                       <span>
@@ -248,20 +276,11 @@ export default function AppLayout() {
 
                   <div className="profile-menu-divider" />
 
-                  <NavLink
-                    to="/profile"
-                    className="profile-menu-item"
-                    onClick={() =>
-                      setProfileOpen(false)
-                    }
-                  >
-                    <User size={16} />
-                    Profile
-                  </NavLink>
-
                   <button
                     className="profile-menu-item profile-logout"
-                    onClick={logout}
+                    onClick={
+                      handleLogout
+                    }
                   >
                     <X size={16} />
                     Sign out

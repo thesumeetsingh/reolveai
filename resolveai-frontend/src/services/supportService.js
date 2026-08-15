@@ -1,35 +1,38 @@
 import api from "./api";
 
 export const createSupportRequest = async (requestData) => {
-  const response = await api.post(
-    "/support",
-    requestData
-  );
+  const response = await api.post("/support", requestData);
+  return response.data;
+};
 
+export const getMySupportRequests = async () => {
+  const response = await api.get("/support/my");
   return response.data;
 };
 
 export const updateIncidentStatus = async (
   supportRequestId,
-  requestData
+  requestData,
+  isAdmin = false
 ) => {
-  const response = await api.put(
-    `/support/${supportRequestId}/status`,
-    requestData
-  );
+  const endpoint = isAdmin
+    ? `/admin/incidents/${supportRequestId}/status`
+    : `/support/${supportRequestId}/status`;
 
+  const response = await api.put(endpoint, requestData);
   return response.data;
 };
 
 export const assignIncident = async (
   supportRequestId,
-  requestData
+  requestData,
+  isAdmin = false
 ) => {
-  const response = await api.put(
-    `/support/${supportRequestId}/assign`,
-    requestData
-  );
+  const endpoint = isAdmin
+    ? `/admin/incidents/${supportRequestId}/assign`
+    : `/support/${supportRequestId}/assign`;
 
+  const response = await api.put(endpoint, requestData);
   return response.data;
 };
 
@@ -46,11 +49,13 @@ export const addIncidentComment = async (
 };
 
 export const getIncidentActivities = async (
-  supportRequestId
+  supportRequestId,
+  isAdmin = false
 ) => {
-  const response = await api.get(
-    `/support/${supportRequestId}/activities`
-  );
+  const endpoint = isAdmin
+    ? `/admin/incidents/${supportRequestId}/activities`
+    : `/support/${supportRequestId}/activities`;
 
+  const response = await api.get(endpoint);
   return response.data;
 };
