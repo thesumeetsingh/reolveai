@@ -1,0 +1,306 @@
+.support-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.support-header {
+  margin-bottom: 24px;
+}
+
+.support-eyebrow {
+  margin: 0 0 7px;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.support-header h1 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 25px;
+  font-weight: 650;
+
+  letter-spacing: -0.035em;
+}
+
+.support-header p {
+  margin: 7px 0 0;
+
+  color: var(--text-secondary);
+
+  font-size: 12px;
+}
+
+.support-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+
+  margin-bottom: 16px;
+  padding: 12px 14px;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+
+  font-size: 11px;
+}
+
+.support-alert-error {
+  border-color: color-mix(
+    in srgb,
+    var(--danger) 35%,
+    var(--border)
+  );
+
+  background: color-mix(
+    in srgb,
+    var(--danger) 7%,
+    var(--bg-secondary)
+  );
+
+  color: var(--danger);
+}
+
+.support-alert-success {
+  border-color: color-mix(
+    in srgb,
+    var(--success) 35%,
+    var(--border)
+  );
+
+  background: color-mix(
+    in srgb,
+    var(--success) 7%,
+    var(--bg-secondary)
+  );
+
+  color: var(--success);
+}
+
+.support-alert div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.support-alert strong {
+  color: var(--text-primary);
+
+  font-size: 11px;
+}
+
+.support-alert span {
+  color: var(--text-secondary);
+
+  font-size: 10px;
+}
+
+.support-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.support-panel {
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  background: var(--bg-secondary);
+}
+
+.support-panel-header {
+  padding: 17px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.support-panel-header h2 {
+  margin: 0;
+
+  color: var(--text-primary);
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.support-panel-header p {
+  margin: 5px 0 0;
+
+  color: var(--text-muted);
+
+  font-size: 10px;
+}
+
+.support-form-grid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 15px;
+
+  padding: 17px;
+}
+
+.support-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.support-field-full {
+  padding: 0 17px 17px;
+}
+
+.support-field label {
+  color: var(--text-secondary);
+
+  font-size: 10px;
+  font-weight: 550;
+}
+
+.support-field input,
+.support-field select,
+.support-field textarea {
+  width: 100%;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  outline: none;
+
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  font-family: inherit;
+  font-size: 11px;
+
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.support-field input,
+.support-field select {
+  height: 37px;
+
+  padding: 0 10px;
+}
+
+.support-field textarea {
+  min-height: 90px;
+
+  padding: 10px;
+
+  resize: vertical;
+}
+
+.support-field input::placeholder,
+.support-field textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.support-field input:focus,
+.support-field select:focus,
+.support-field textarea:focus {
+  border-color: var(--info);
+
+  box-shadow:
+    0 0 0 2px color-mix(
+      in srgb,
+      var(--info) 12%,
+      transparent
+    );
+}
+
+.support-field input:disabled,
+.support-field select:disabled,
+.support-field textarea:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+}
+
+.support-submit-row {
+  display: flex;
+  justify-content: flex-end;
+
+  padding-bottom: 20px;
+}
+
+.support-submit-button {
+  height: 38px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+
+  padding: 0 14px;
+
+  border: 1px solid var(--accent);
+  border-radius: 7px;
+
+  background: var(--accent);
+  color: var(--accent-text);
+
+  font-size: 11px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.support-submit-button:hover {
+  opacity: 0.88;
+}
+
+.support-submit-button:disabled {
+  opacity: 0.5;
+
+  cursor: not-allowed;
+}
+
+.support-button-spinner {
+  width: 13px;
+  height: 13px;
+
+  border: 2px solid color-mix(
+    in srgb,
+    var(--accent-text) 30%,
+    transparent
+  );
+
+  border-top-color: var(--accent-text);
+
+  border-radius: 50%;
+
+  animation: support-spin 0.7s linear infinite;
+}
+
+@keyframes support-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .support-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .support-submit-row {
+    justify-content: stretch;
+  }
+
+  .support-submit-button {
+    width: 100%;
+  }
+}

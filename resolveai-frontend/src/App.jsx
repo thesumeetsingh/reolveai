@@ -9,6 +9,8 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Dashboard from "./pages/Dashboard";
 import Projects from "./pages/Projects";
+import ProjectDetails from "./pages/ProjectDetails";
+import Support from "./pages/Support";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import AppLayout from "./components/AppLayout";
@@ -41,6 +43,16 @@ function App() {
             <Route
               path="/projects"
               element={<Projects />}
+            />
+
+            <Route
+              path="/projects/:projectId"
+              element={<ProjectDetails />}
+            />
+
+            <Route
+              path="/support"
+              element={<Support />}
             />
 
           </Route>
