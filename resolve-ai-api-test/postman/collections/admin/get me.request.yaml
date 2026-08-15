@@ -1,0 +1,10 @@
+$kind: http-request
+name: get me
+description: ""
+url: "{{baseUrl}}/api/users/me"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminJWT}}"
+order: 4466657910442041

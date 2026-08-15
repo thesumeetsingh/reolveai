@@ -1,0 +1,10 @@
+$kind: http-request
+name: employee dashboard with admin
+description: ""
+url: "{{baseUrl}}/api/employee/dashboard"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminJWT}}"
+order: 4216130625847898

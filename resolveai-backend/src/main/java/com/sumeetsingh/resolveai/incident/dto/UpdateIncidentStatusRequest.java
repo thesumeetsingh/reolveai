@@ -11,6 +11,11 @@ public class UpdateIncidentStatusRequest {
 
     private String message;
 
+    private String resolutionSummary;
+
+    public UpdateIncidentStatusRequest() {
+    }
+
     public IncidentStatus getStatus() {
         return status;
     }
@@ -25,5 +30,13 @@ public class UpdateIncidentStatusRequest {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getResolutionSummary() {
+        return resolutionSummary;
+    }
+
+    public void setResolutionSummary(String resolutionSummary) {
+        this.resolutionSummary = resolutionSummary;
     }
 }

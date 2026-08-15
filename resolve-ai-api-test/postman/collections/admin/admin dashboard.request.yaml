@@ -1,0 +1,10 @@
+$kind: http-request
+name: admin dashboard
+description: ""
+url: "{{baseUrl}}/api/admin/dashboard"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{adminJWT}}"
+order: 4451097571137009

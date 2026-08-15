@@ -1,0 +1,10 @@
+$kind: http-request
+name: get employee dashboard
+description: ""
+url: "{{baseUrl}}/api/employee/dashboard"
+method: GET
+auth:
+  type: bearer
+  credentials:
+    token: "{{employeeJWT}}"
+order: 2641555258422539

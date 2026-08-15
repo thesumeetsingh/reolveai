@@ -73,7 +73,23 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+
+                        // Public authentication APIs
                         .requestMatchers("/api/auth/**").permitAll()
+
+                        // ADMIN only
+                        .requestMatchers("/api/admin/**")
+                        .hasRole("ADMIN")
+
+                        // EMPLOYEE + ADMIN
+                        .requestMatchers("/api/employee/**")
+                        .hasAnyRole("EMPLOYEE", "ADMIN")
+
+                        // Any logged-in user
+                        .requestMatchers("/api/users/me")
+                        .authenticated()
+
+                        // Everything else requires authentication
                         .anyRequest().authenticated()
                 )
 

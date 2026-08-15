@@ -3,6 +3,8 @@ package com.sumeetsingh.resolveai.admin.controller;
 import java.util.List;
 
 import com.sumeetsingh.resolveai.admin.dto.AdminDashboardResponse;
+import com.sumeetsingh.resolveai.incident.dto.UpdateIncidentStatusRequest;
+import com.sumeetsingh.resolveai.support.dto.SupportRequestResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,12 @@ import com.sumeetsingh.resolveai.incident.document.IncidentActivity;
 import com.sumeetsingh.resolveai.incident.document.IncidentAttachment;
 import com.sumeetsingh.resolveai.incident.document.IncidentLog;
 import com.sumeetsingh.resolveai.support.entity.SupportRequest;
+import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
+
+//import com.sumeetsingh.resolveai.support.dto.AssignIncidentRequest;
+import com.sumeetsingh.resolveai.incident.dto.AssignIncidentRequest;
+import com.sumeetsingh.resolveai.support.service.SupportRequestService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
     private final AdminService adminService;
+    private final SupportRequestService supportRequestService;
 
 
     @GetMapping("/users")
@@ -90,6 +99,48 @@ public class AdminController {
 
         return ResponseEntity.ok(
                 adminService.getDashboard()
+        );
+    }
+    @PutMapping("/incidents/{supportRequestId}/assign")
+    public ResponseEntity<SupportRequestResponse> assignIncident(
+
+            @PathVariable Long supportRequestId,
+
+            @Valid @RequestBody
+            AssignIncidentRequest request,
+
+            Authentication authentication
+
+    ) {
+
+        return ResponseEntity.ok(
+                supportRequestService.assignIncident(
+                        supportRequestId,
+                        request,
+                        authentication.getName()
+                )
+        );
+    }
+
+
+    @PutMapping("/incidents/{supportRequestId}/status")
+    public ResponseEntity<SupportRequestResponse> updateIncidentStatus(
+
+            @PathVariable Long supportRequestId,
+
+            @Valid @RequestBody
+            UpdateIncidentStatusRequest request,
+
+            Authentication authentication
+
+    ) {
+
+        return ResponseEntity.ok(
+                supportRequestService.updateIncidentStatus(
+                        supportRequestId,
+                        request,
+                        authentication.getName()
+                )
         );
     }
 }

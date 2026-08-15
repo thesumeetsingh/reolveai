@@ -1,0 +1,8 @@
+name: resolveai-env
+values:
+  - key: adminJWT
+    secret: true
+  - key: employeeJWT
+    secret: true
+  - key: baseUrl
+    value: ''

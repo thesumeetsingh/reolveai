@@ -52,7 +52,7 @@ public class SupportRequestController {
     ) {
 
         return ResponseEntity.ok(
-                supportRequestService.updateStatus(
+                supportRequestService.updateIncidentStatus(
                         supportRequestId,
                         request,
                         authentication.getName()

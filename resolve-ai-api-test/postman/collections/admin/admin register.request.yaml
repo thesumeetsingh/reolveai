@@ -1,0 +1,25 @@
+$kind: http-request
+name: admin register
+description: ""
+url: http://localhost:8080/api/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\": \"admin_test\",\r
+
+    \    \"email\": \"admin_test@resolveai.com\",\r
+
+    \    \"password\": \"Password@123\",\r
+
+    \    \"firstName\": \"Test\",\r
+
+    \    \"lastName\": \"Admin\",\r
+
+    \    \"mobile\": \"9876543211\",\r
+
+    \    \"address\": \"Bhilai, Chhattisgarh\"\r
+
+    }"
+order: 2884906893026989

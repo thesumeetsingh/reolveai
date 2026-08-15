@@ -18,6 +18,7 @@ import com.sumeetsingh.resolveai.support.entity.SupportRequest;
 import com.sumeetsingh.resolveai.support.repository.SupportRequestRepository;
 import com.sumeetsingh.resolveai.user.entity.User;
 import com.sumeetsingh.resolveai.user.repository.UserRepository;
+//import com.sumeetsingh.resolveai.support.dto.UpdateIncidentStatusRequest;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -285,83 +286,83 @@ public class SupportRequestService {
 
         return supportRequest;
     }
-    @Transactional
-    public SupportRequestResponse updateStatus(
-            Long supportRequestId,
-            UpdateIncidentStatusRequest request,
-            String username
-    ) {
-
-        SupportRequest supportRequest =
-                getRequestForMember(
-                        supportRequestId,
-                        username
-                );
-
-        IncidentStatus oldStatus =
-                supportRequest.getStatus();
-
-        IncidentStatus newStatus =
-                request.getStatus();
-
-        if (oldStatus == newStatus) {
-            throw new IllegalArgumentException(
-                    "Incident is already in this status"
-            );
-        }
-
-        supportRequest.setStatus(newStatus);
-
-        if (newStatus == IncidentStatus.RESOLVED
-                || newStatus == IncidentStatus.CLOSED) {
-
-            supportRequest.setResolvedAt(
-                    LocalDateTime.now()
-            );
-        }
-
-        SupportRequest saved =
-                supportRequestRepository.save(
-                        supportRequest
-                );
-
-        User actor =
-                userRepository.findByUsername(username)
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "User not found"
-                                )
-                        );
-
-        IncidentActivity activity =
-                IncidentActivity.builder()
-                        .supportRequestId(
-                                supportRequestId
-                        )
-                        .projectId(
-                                supportRequest
-                                        .getProject()
-                                        .getProjectId()
-                        )
-                        .actorId(actor.getUserId())
-                        .actorUsername(actor.getUsername())
-                        .activityType("STATUS_CHANGED")
-                        .message(
-                                request.getMessage()
-                        )
-                        .oldStatus(
-                                oldStatus.name()
-                        )
-                        .newStatus(
-                                newStatus.name()
-                        )
-                        .createdAt(LocalDateTime.now())
-                        .build();
-
-        incidentActivityRepository.save(activity);
-
-        return toResponse(saved);
-    }
+//    @Transactional
+//    public SupportRequestResponse updateStatus(
+//            Long supportRequestId,
+//            UpdateIncidentStatusRequest request,
+//            String username
+//    ) {
+//
+//        SupportRequest supportRequest =
+//                getRequestForMember(
+//                        supportRequestId,
+//                        username
+//                );
+//
+//        IncidentStatus oldStatus =
+//                supportRequest.getStatus();
+//
+//        IncidentStatus newStatus =
+//                request.getStatus();
+//
+//        if (oldStatus == newStatus) {
+//            throw new IllegalArgumentException(
+//                    "Incident is already in this status"
+//            );
+//        }
+//
+//        supportRequest.setStatus(newStatus);
+//
+//        if (newStatus == IncidentStatus.RESOLVED
+//                || newStatus == IncidentStatus.CLOSED) {
+//
+//            supportRequest.setResolvedAt(
+//                    LocalDateTime.now()
+//            );
+//        }
+//
+//        SupportRequest saved =
+//                supportRequestRepository.save(
+//                        supportRequest
+//                );
+//
+//        User actor =
+//                userRepository.findByUsername(username)
+//                        .orElseThrow(() ->
+//                                new IllegalArgumentException(
+//                                        "User not found"
+//                                )
+//                        );
+//
+//        IncidentActivity activity =
+//                IncidentActivity.builder()
+//                        .supportRequestId(
+//                                supportRequestId
+//                        )
+//                        .projectId(
+//                                supportRequest
+//                                        .getProject()
+//                                        .getProjectId()
+//                        )
+//                        .actorId(actor.getUserId())
+//                        .actorUsername(actor.getUsername())
+//                        .activityType("STATUS_CHANGED")
+//                        .message(
+//                                request.getMessage()
+//                        )
+//                        .oldStatus(
+//                                oldStatus.name()
+//                        )
+//                        .newStatus(
+//                                newStatus.name()
+//                        )
+//                        .createdAt(LocalDateTime.now())
+//                        .build();
+//
+//        incidentActivityRepository.save(activity);
+//
+//        return toResponse(saved);
+//    }
 
     @Transactional
     public SupportRequestResponse assignIncident(
@@ -517,4 +518,122 @@ public class SupportRequestService {
                 );
     }
 
+
+    @Transactional
+    public SupportRequestResponse updateIncidentStatus(
+            Long supportRequestId,
+            UpdateIncidentStatusRequest request,
+            String username
+    ) {
+
+        SupportRequest incident =
+                supportRequestRepository.findById(
+                        supportRequestId
+                ).orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Support request not found"
+                        )
+                );
+
+        User actor =
+                userRepository.findByUsername(username)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "User not found"
+                                )
+                        );
+
+        IncidentStatus oldStatus =
+                incident.getStatus();
+
+        IncidentStatus newStatus =
+                request.getStatus();
+
+        if (oldStatus == newStatus) {
+
+            throw new IllegalArgumentException(
+                    "Incident is already in " + newStatus + " status"
+            );
+        }
+
+        /*
+         * Resolution information is required
+         * when the incident becomes RESOLVED.
+         */
+        if (newStatus == IncidentStatus.RESOLVED) {
+
+            if (request.getResolutionSummary() == null
+                    || request.getResolutionSummary().isBlank()) {
+
+                throw new IllegalArgumentException(
+                        "Resolution summary is required"
+                );
+            }
+
+            incident.setResolutionSummary(
+                    request.getResolutionSummary()
+            );
+
+            incident.setResolvedAt(
+                    LocalDateTime.now()
+            );
+        }
+
+        /*
+         * Reopening clears the resolved timestamp.
+         */
+        if (newStatus == IncidentStatus.REOPENED) {
+
+            incident.setResolvedAt(null);
+        }
+
+        incident.setStatus(newStatus);
+
+        SupportRequest savedIncident =
+                supportRequestRepository.save(
+                        incident
+                );
+
+        IncidentActivity activity =
+                IncidentActivity.builder()
+                        .supportRequestId(
+                                supportRequestId
+                        )
+                        .projectId(
+                                incident.getProject()
+                                        .getProjectId()
+                        )
+                        .actorId(
+                                actor.getUserId()
+                        )
+                        .actorUsername(
+                                actor.getUsername()
+                        )
+                        .activityType(
+                                "STATUS_CHANGED"
+                        )
+                        .message(
+                                request.getMessage() != null
+                                        && !request.getMessage().isBlank()
+                                        ? request.getMessage()
+                                        : "Incident status changed from "
+                                        + oldStatus
+                                        + " to "
+                                        + newStatus
+                        )
+                        .oldStatus(
+                                oldStatus.name()
+                        )
+                        .newStatus(
+                                newStatus.name()
+                        )
+                        .createdAt(
+                                LocalDateTime.now()
+                        )
+                        .build();
+
+        incidentActivityRepository.save(activity);
+
+        return toResponse(savedIncident);
+    }
 }
