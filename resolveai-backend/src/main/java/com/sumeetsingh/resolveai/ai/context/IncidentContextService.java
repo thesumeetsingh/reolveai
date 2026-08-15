@@ -103,8 +103,9 @@ public class IncidentContextService {
         return new IncidentContext(
 
                 incident.getSupportRequestId(),
-
+                project.getProjectId(),
                 incident.getTicketNumber(),
+
 
                 project.getProjectName(),
 

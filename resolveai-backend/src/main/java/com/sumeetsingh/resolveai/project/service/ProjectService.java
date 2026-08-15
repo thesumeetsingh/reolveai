@@ -46,7 +46,14 @@ public class ProjectService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("User not found")
                 );
-
+        if (isAdmin(user)) {
+            return projectRepository.findById(projectId)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Project not found"
+                            )
+                    );
+        }
         ProjectMember member =
                 projectMemberRepository
                         .findByProjectProjectIdAndUserUserId(
@@ -152,7 +159,17 @@ public class ProjectService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("User not found")
                 );
-
+        if (isAdmin(user)) {
+            return projectRepository.findAll()
+                    .stream()
+                    .map(project -> new ProjectSummaryResponse(
+                            project.getProjectId(),
+                            project.getProjectCode(),
+                            project.getProjectName(),
+                            project.getStatus()
+                    ))
+                    .toList();
+        }
         List<ProjectMember> memberships =
                 projectMemberRepository.findByUserUserIdAndStatus(
                         user.getUserId(),
@@ -181,25 +198,41 @@ public class ProjectService {
                         new IllegalArgumentException("User not found")
                 );
 
-        ProjectMember membership =
-                projectMemberRepository
-                        .findByProjectProjectIdAndUserUserId(
-                                projectId,
-                                user.getUserId()
-                        )
-                        .orElseThrow(() ->
-                                new IllegalArgumentException(
-                                        "You do not have access to this project"
-                                )
-                        );
+        Project project;
 
-        if (membership.getStatus() != ProjectMemberStatus.ACTIVE) {
-            throw new IllegalArgumentException(
-                    "You do not have access to this project"
-            );
+        if (isAdmin(user)) {
+
+            project = projectRepository.findById(projectId)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Project not found"
+                            )
+                    );
+
+        } else {
+
+            ProjectMember membership =
+                    projectMemberRepository
+                            .findByProjectProjectIdAndUserUserId(
+                                    projectId,
+                                    user.getUserId()
+                            )
+                            .orElseThrow(() ->
+                                    new IllegalArgumentException(
+                                            "You do not have access to this project"
+                                    )
+                            );
+
+            if (membership.getStatus()
+                    != ProjectMemberStatus.ACTIVE) {
+
+                throw new IllegalArgumentException(
+                        "You do not have access to this project"
+                );
+            }
+
+            project = membership.getProject();
         }
-
-        Project project = membership.getProject();
 
         List<ProjectMemberResponse> members =
                 projectMemberRepository
@@ -416,7 +449,14 @@ public class ProjectService {
                 .orElseThrow(() ->
                         new IllegalArgumentException("User not found")
                 );
-
+        if (isAdmin(user)) {
+            return projectRepository.findById(projectId)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "Project not found"
+                            )
+                    );
+        }
         ProjectMember member =
                 projectMemberRepository
                         .findByProjectProjectIdAndUserUserId(
@@ -505,5 +545,16 @@ public class ProjectService {
                 service.getVersion(),
                 service.getStatus()
         );
+    }
+
+    private boolean isAdmin(User user) {
+
+        return user.getRoles()
+                .stream()
+                .anyMatch(role ->
+                        "ADMIN".equalsIgnoreCase(
+                                role.getRoleName()
+                        )
+                );
     }
 }

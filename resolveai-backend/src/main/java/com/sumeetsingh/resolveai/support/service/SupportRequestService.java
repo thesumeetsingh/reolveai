@@ -133,6 +133,32 @@ public class SupportRequestService {
         return toResponse(saved);
     }
 
+    @Transactional(readOnly = true)
+    public List<SupportRequestResponse> getMySupportRequests(
+            String username
+    ) {
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("User not found")
+                );
+
+        return supportRequestRepository
+                .findByReportedByUserId(user.getUserId())
+                .stream()
+                .sorted((first, second) -> {
+                    LocalDateTime firstDate = first.getUpdatedAt() != null
+                            ? first.getUpdatedAt()
+                            : first.getCreatedAt();
+                    LocalDateTime secondDate = second.getUpdatedAt() != null
+                            ? second.getUpdatedAt()
+                            : second.getCreatedAt();
+                    return secondDate.compareTo(firstDate);
+                })
+                .map(this::toResponse)
+                .toList();
+    }
+
     private String generateTicketNumber() {
 
         return "RAI-" +
@@ -246,12 +272,6 @@ public class SupportRequestService {
             String username
     ) {
 
-        SupportRequest supportRequest =
-                getRequestForMember(
-                        supportRequestId,
-                        username
-                );
-
         User user =
                 userRepository.findByUsername(username)
                         .orElseThrow(() ->
@@ -259,6 +279,23 @@ public class SupportRequestService {
                                         "User not found"
                                 )
                         );
+
+        if (isAdmin(user)) {
+
+            return supportRequestRepository.findById(
+                    supportRequestId
+            ).orElseThrow(() ->
+                    new IllegalArgumentException(
+                            "Support request not found"
+                    )
+            );
+        }
+
+        SupportRequest supportRequest =
+                getRequestForMember(
+                        supportRequestId,
+                        username
+                );
 
         ProjectMember member =
                 projectMemberRepository
@@ -635,5 +672,16 @@ public class SupportRequestService {
         incidentActivityRepository.save(activity);
 
         return toResponse(savedIncident);
+    }
+
+    private boolean isAdmin(User user) {
+
+        return user.getRoles()
+                .stream()
+                .anyMatch(role ->
+                        "ADMIN".equalsIgnoreCase(
+                                role.getRoleName()
+                        )
+                );
     }
 }

@@ -6,6 +6,8 @@ public record IncidentContext(
 
         Long supportRequestId,
 
+        Long ProjectId,
+
         String ticketNumber,
 
         String projectName,

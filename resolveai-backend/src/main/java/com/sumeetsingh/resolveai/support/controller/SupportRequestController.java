@@ -44,6 +44,18 @@ public class SupportRequestController {
                         )
                 );
     }
+    @GetMapping("/my")
+    public ResponseEntity<List<SupportRequestResponse>> getMySupportRequests(
+            Authentication authentication
+    ) {
+
+        return ResponseEntity.ok(
+                supportRequestService.getMySupportRequests(
+                        authentication.getName()
+                )
+        );
+    }
+
     @PutMapping("/{supportRequestId}/status")
     public ResponseEntity<SupportRequestResponse> updateStatus(
             @PathVariable Long supportRequestId,
