@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.sumeetsingh.resolveai.ai.document.FileContentExtractor;
 import com.sumeetsingh.resolveai.incident.document.IncidentAttachment;
 import com.sumeetsingh.resolveai.incident.repository.IncidentAttachmentRepository;
 import com.sumeetsingh.resolveai.project.entity.ProjectMember;
@@ -30,6 +31,8 @@ public class IncidentAttachmentService {
     private final UserRepository userRepository;
     private final ProjectMemberRepository projectMemberRepository;
     private final SupportRequestRepository supportRequestRepository;
+
+    private final FileContentExtractor fileContentExtractor;
 
     public IncidentAttachment uploadFile(
             Long supportRequestId,
@@ -77,12 +80,50 @@ public class IncidentAttachmentService {
             );
         }
 
+        /*
+         * Store the original file in MongoDB GridFS.
+         */
         ObjectId gridFsFileId = gridFsTemplate.store(
                 file.getInputStream(),
                 file.getOriginalFilename(),
                 file.getContentType()
         );
 
+        /*
+         * Extract text from supported text-based files.
+         *
+         * The actual file remains in GridFS.
+         * The extracted text is stored separately so
+         * the AI can use it later.
+         */
+        String extractedText = null;
+
+        if (file.getContentType() != null
+                && (
+                file.getContentType().equals("text/plain")
+                        || file.getContentType().equals("application/json")
+                        || file.getContentType().equals("text/csv")
+        )) {
+
+            try {
+
+                extractedText =
+                        fileContentExtractor.extractText(
+                                file.getInputStream()
+                        );
+
+            } catch (Exception e) {
+
+                throw new IllegalArgumentException(
+                        "Unable to extract file content",
+                        e
+                );
+            }
+        }
+
+        /*
+         * Store metadata + extracted text.
+         */
         IncidentAttachment attachment =
                 IncidentAttachment.builder()
                         .supportRequestId(supportRequestId)
@@ -91,7 +132,10 @@ public class IncidentAttachmentService {
                         .fileName(file.getOriginalFilename())
                         .contentType(file.getContentType())
                         .fileSize(file.getSize())
-                        .gridFsFileId(gridFsFileId.toHexString())
+                        .gridFsFileId(
+                                gridFsFileId.toHexString()
+                        )
+                        .extractedText(extractedText)
                         .uploadedAt(LocalDateTime.now())
                         .build();
 
@@ -105,7 +149,9 @@ public class IncidentAttachmentService {
 
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() ->
-                        new IllegalArgumentException("User not found")
+                        new IllegalArgumentException(
+                                "User not found"
+                        )
                 );
 
         var supportRequest =
@@ -135,6 +181,8 @@ public class IncidentAttachmentService {
                 );
 
         return attachmentRepository
-                .findBySupportRequestId(supportRequestId);
+                .findBySupportRequestId(
+                        supportRequestId
+                );
     }
 }

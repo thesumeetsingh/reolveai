@@ -1,5 +1,6 @@
 package com.sumeetsingh.resolveai.support.repository;
 
+import com.sumeetsingh.resolveai.support.entity.IncidentSeverity;
 import com.sumeetsingh.resolveai.support.entity.SupportRequest;
 import com.sumeetsingh.resolveai.support.entity.IncidentStatus;
 
@@ -33,4 +34,27 @@ public interface SupportRequestRepository
     );
 
     boolean existsByTicketNumber(String ticketNumber);
+    long countByStatus(IncidentStatus status);
+
+    long countBySeverity(IncidentSeverity severity);
+
+    long countByStatusAndSeverity(
+            IncidentStatus status,
+            IncidentSeverity severity
+    );
+
+    long countByReportedByUserIdAndStatus(
+            Long userId,
+            IncidentStatus status
+    );
+
+    long countByReportedByUserIdAndSeverity(
+            Long userId,
+            IncidentSeverity severity
+    );
+
+    long countByAssignedToUserIdAndStatus(
+            Long userId,
+            IncidentStatus status
+    );
 }

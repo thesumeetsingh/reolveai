@@ -49,6 +49,10 @@ public class User {
 
     private LocalDateTime lastLoginAt;
 
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
     public User() {
     }
     @ManyToMany(fetch = FetchType.EAGER)

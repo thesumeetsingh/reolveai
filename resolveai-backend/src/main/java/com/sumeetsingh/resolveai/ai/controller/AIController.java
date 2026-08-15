@@ -17,20 +17,6 @@ public class AIController {
 
     private final AIService aiService;
 
-    @PostMapping("/incidents/{supportRequestId}/ask")
-    public ResponseEntity<String> askAboutIncident(
-            @PathVariable Long supportRequestId,
-            @Valid @RequestBody AIQuestionRequest request,
-            Authentication authentication
-    ) {
-
-        return ResponseEntity.ok(
-                aiService.analyzeIncident(
-                        supportRequestId,
-                        request.question()
-                )
-        );
-    }
     @PostMapping("/conversations/{conversationId}/ask")
     public ResponseEntity<String> ask(
             @PathVariable Long conversationId,

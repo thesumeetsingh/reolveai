@@ -44,6 +44,9 @@ public record IncidentContext(
 
         List<String> logs,
 
-        List<String> activities
+        List<String> activities,
+
+        List<String> attachments
+
 ) {
 }

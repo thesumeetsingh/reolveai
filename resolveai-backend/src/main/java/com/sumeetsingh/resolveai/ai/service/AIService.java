@@ -1,144 +1,52 @@
 package com.sumeetsingh.resolveai.ai.service;
 
-import com.sumeetsingh.resolveai.ai.document.AIMessage;
-import com.sumeetsingh.resolveai.ai.entity.AIConversation;
-import com.sumeetsingh.resolveai.ai.repository.AIConversationRepository;
-import com.sumeetsingh.resolveai.ai.repository.AIMessageRepository;
-import com.sumeetsingh.resolveai.user.repository.UserRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 
 import com.sumeetsingh.resolveai.ai.context.IncidentContext;
 import com.sumeetsingh.resolveai.ai.context.IncidentContextService;
-import java.time.LocalDateTime;
-import java.util.List;
-
+import com.sumeetsingh.resolveai.ai.document.AIMessage;
+import com.sumeetsingh.resolveai.ai.entity.AIConversation;
+import com.sumeetsingh.resolveai.ai.repository.AIConversationRepository;
+import com.sumeetsingh.resolveai.ai.repository.AIMessageRepository;
 import com.sumeetsingh.resolveai.user.entity.User;
-
+import com.sumeetsingh.resolveai.user.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
 public class AIService {
 
     private final ChatClient.Builder chatClientBuilder;
+
     private final IncidentContextService incidentContextService;
+
     private final AIConversationRepository conversationRepository;
     private final AIMessageRepository messageRepository;
+
     private final UserRepository userRepository;
 
-    public String analyzeIncident(
-            Long supportRequestId,
-            String question
-    ) {
-
-        IncidentContext context =
-                incidentContextService.buildContext(
-                        supportRequestId
-                );
-
-        ChatClient chatClient =
-                chatClientBuilder.build();
-
-        return chatClient
-                .prompt()
-                .system("""
-                        You are ResolveAI, an AI-powered
-                        software incident investigation assistant.
-
-                        You help software engineers diagnose
-                        application incidents using the provided
-                        project and incident context.
-
-                        Rules:
-                        - Use the provided context as the primary source.
-                        - Do not invent logs, services, errors or events.
-                        - Clearly distinguish facts from hypotheses.
-                        - Give technically practical troubleshooting steps.
-                        - If the available information is insufficient,
-                          explicitly say what information is missing.
-                        """)
-                .user("""
-                        Analyze the following software incident.
-
-                        PROJECT:
-                        Project Name: %s
-                        Project Code: %s
-                        Project Description: %s
-                        Project Status: %s
-
-                        TECHNOLOGIES:
-                        %s
-
-                        SERVICES:
-                        %s
-
-                        INCIDENT:
-                        Ticket: %s
-                        Title: %s
-                        Description: %s
-                        Type: %s
-                        Severity: %s
-                        Status: %s
-                        Environment: %s
-                        Affected Service: %s
-                        Affected Version: %s
-                        Error Code: %s
-
-                        EXPECTED BEHAVIOR:
-                        %s
-
-                        ACTUAL BEHAVIOR:
-                        %s
-
-                        LOGS:
-                        %s
-
-                        INCIDENT HISTORY:
-                        %s
-
-                        USER QUESTION:
-                        %s
-                        """.formatted(
-                        context.projectName(),
-                        context.projectCode(),
-                        context.projectDescription(),
-                        context.projectStatus(),
-                        context.technologies(),
-                        context.services(),
-                        context.ticketNumber(),
-                        context.incidentTitle(),
-                        context.incidentDescription(),
-                        context.incidentType(),
-                        context.severity(),
-                        context.status(),
-                        context.environment(),
-                        context.affectedService(),
-                        context.affectedVersion(),
-                        context.errorCode(),
-                        context.expectedBehavior(),
-                        context.actualBehavior(),
-                        context.logs(),
-                        context.activities(),
-                        question
-                ))
-                .call()
-                .content();
-    }
     public String ask(
             Long conversationId,
             String question,
             String username
     ) {
 
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() ->
-                        new IllegalArgumentException("User not found")
-                );
+        // Find the authenticated user.
+        User user =
+                userRepository.findByUsername(username)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "User not found"
+                                )
+                        );
 
+        // Make sure this conversation belongs to this user.
         AIConversation conversation =
                 conversationRepository
                         .findByConversationIdAndUserUserId(
@@ -151,16 +59,19 @@ public class AIService {
                                 )
                         );
 
+        // Get the incident associated with this conversation.
         Long supportRequestId =
                 conversation
                         .getSupportRequest()
                         .getSupportRequestId();
 
+        // Build complete project + incident context.
         IncidentContext context =
                 incidentContextService.buildContext(
                         supportRequestId
                 );
 
+        // Load previous conversation messages.
         List<AIMessage> history =
                 messageRepository
                         .findByConversationIdOrderByCreatedAtAsc(
@@ -175,87 +86,219 @@ public class AIService {
                                         + message.getContent()
                         )
                         .collect(
-                                java.util.stream.Collectors.joining(
-                                        "\n"
-                                )
+                                Collectors.joining("\n")
                         );
 
+        // Create Spring AI ChatClient.
         ChatClient chatClient =
                 chatClientBuilder.build();
 
+        /*
+         * Send ONE user prompt containing:
+         *
+         * Project
+         * Incident
+         * Logs
+         * Attachments
+         * Activity history
+         * Previous AI conversation
+         * Current question
+         */
         String response =
                 chatClient
                         .prompt()
+
                         .system("""
-                            You are ResolveAI, an AI-powered
-                            software incident investigation assistant.
+                                You are ResolveAI, an AI-powered
+                                software incident investigation assistant.
 
-                            Use the incident context and conversation
-                            history to help the engineer.
+                                You help software engineers investigate
+                                application incidents using the provided
+                                project and incident context.
 
-                            Do not invent facts.
-                            Clearly distinguish facts from hypotheses.
-                            Give practical technical troubleshooting steps.
-                            """)
+                                Rules:
+
+                                1. Use the provided context as the
+                                   primary source of truth.
+
+                                2. Do not invent logs, services,
+                                   errors, project information,
+                                   or incident events.
+
+                                3. Clearly distinguish confirmed facts
+                                   from hypotheses.
+
+                                4. Give practical technical
+                                   troubleshooting steps.
+
+                                5. If the available information is
+                                   insufficient, clearly state what
+                                   additional information is required.
+
+                                6. When analyzing logs or attached files,
+                                   reference the relevant evidence.
+
+                                7. Do not claim that an issue is resolved
+                                   unless the incident context confirms it.
+                                """)
+
                         .user("""
-                            INCIDENT CONTEXT:
+                                PROJECT INFORMATION
+                                ===================
 
-                            Project:
-                            %s
+                                Project Name:
+                                %s
 
-                            Technologies:
-                            %s
+                                Project Code:
+                                %s
 
-                            Services:
-                            %s
+                                Project Description:
+                                %s
 
-                            Incident:
-                            %s
+                                Project Status:
+                                %s
 
-                            Description:
-                            %s
 
-                            Severity:
-                            %s
+                                TECHNOLOGIES
+                                ============
 
-                            Status:
-                            %s
+                                %s
 
-                            Environment:
-                            %s
 
-                            Affected Service:
-                            %s
+                                SERVICES
+                                ========
 
-                            Logs:
-                            %s
+                                %s
 
-                            Incident History:
-                            %s
 
-                            PREVIOUS AI CONVERSATION:
-                            %s
+                                INCIDENT
+                                ========
 
-                            CURRENT QUESTION:
-                            %s
-                            """.formatted(
+                                Ticket:
+                                %s
+
+                                Title:
+                                %s
+
+                                Description:
+                                %s
+
+                                Type:
+                                %s
+
+                                Severity:
+                                %s
+
+                                Status:
+                                %s
+
+                                Environment:
+                                %s
+
+                                Affected Service:
+                                %s
+
+                                Affected Version:
+                                %s
+
+                                Error Code:
+                                %s
+
+
+                                EXPECTED BEHAVIOR
+                                ==================
+
+                                %s
+
+
+                                ACTUAL BEHAVIOR
+                                ================
+
+                                %s
+
+
+                                INCIDENT LOGS
+                                ==============
+
+                                %s
+
+
+                                INCIDENT ACTIVITY HISTORY
+                                ==========================
+
+                                %s
+
+
+                                ATTACHED FILES
+                                ==============
+
+                                %s
+
+
+                                PREVIOUS AI CONVERSATION
+                                ==========================
+
+                                %s
+
+
+                                CURRENT USER QUESTION
+                                ======================
+
+                                %s
+                                """.formatted(
+
                                 context.projectName(),
+
+                                context.projectCode(),
+
+                                context.projectDescription(),
+
+                                context.projectStatus(),
+
                                 context.technologies(),
+
                                 context.services(),
+
+                                context.ticketNumber(),
+
                                 context.incidentTitle(),
+
                                 context.incidentDescription(),
+
+                                context.incidentType(),
+
                                 context.severity(),
+
                                 context.status(),
+
                                 context.environment(),
+
                                 context.affectedService(),
+
+                                context.affectedVersion(),
+
+                                context.errorCode(),
+
+                                context.expectedBehavior(),
+
+                                context.actualBehavior(),
+
                                 context.logs(),
+
                                 context.activities(),
+
+                                context.attachments(),
+
                                 conversationHistory,
+
                                 question
                         ))
+
                         .call()
+
                         .content();
 
+        // Save user's question.
         messageRepository.save(
                 AIMessage.builder()
                         .conversationId(conversationId)
@@ -267,6 +310,7 @@ public class AIService {
                         .build()
         );
 
+        // Save AI response.
         messageRepository.save(
                 AIMessage.builder()
                         .conversationId(conversationId)
@@ -278,9 +322,14 @@ public class AIService {
                         .build()
         );
 
-        conversation.setUpdatedAt(LocalDateTime.now());
+        // Update conversation timestamp.
+        conversation.setUpdatedAt(
+                LocalDateTime.now()
+        );
 
-        conversationRepository.save(conversation);
+        conversationRepository.save(
+                conversation
+        );
 
         return response;
     }

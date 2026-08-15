@@ -6,8 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.sumeetsingh.resolveai.incident.document.IncidentActivity;
+import com.sumeetsingh.resolveai.incident.document.IncidentAttachment;
 import com.sumeetsingh.resolveai.incident.document.IncidentLog;
 import com.sumeetsingh.resolveai.incident.repository.IncidentActivityRepository;
+import com.sumeetsingh.resolveai.incident.repository.IncidentAttachmentRepository;
 import com.sumeetsingh.resolveai.incident.repository.IncidentLogRepository;
 import com.sumeetsingh.resolveai.project.entity.Project;
 import com.sumeetsingh.resolveai.project.entity.ProjectServiceEntity;
@@ -32,6 +34,7 @@ public class IncidentContextService {
 
     private final IncidentLogRepository incidentLogRepository;
     private final IncidentActivityRepository incidentActivityRepository;
+    private final IncidentAttachmentRepository incidentAttachmentRepository;
 
     @Transactional(readOnly = true)
     public IncidentContext buildContext(
@@ -88,6 +91,15 @@ public class IncidentContextService {
                         .map(this::formatActivity)
                         .toList();
 
+        List<String> attachments =
+                incidentAttachmentRepository
+                        .findBySupportRequestId(
+                                supportRequestId
+                        )
+                        .stream()
+                        .map(this::formatAttachment)
+                        .toList();
+
         return new IncidentContext(
 
                 incident.getSupportRequestId(),
@@ -130,11 +142,15 @@ public class IncidentContextService {
 
                 logs,
 
-                activities
+                activities,
+
+                attachments
         );
     }
 
-    private String formatLog(IncidentLog log) {
+    private String formatLog(
+            IncidentLog log
+    ) {
 
         return """
                 Source: %s
@@ -172,6 +188,25 @@ public class IncidentContextService {
                 activity.getMessage(),
                 activity.getOldStatus(),
                 activity.getNewStatus()
+        );
+    }
+
+    private String formatAttachment(
+            IncidentAttachment attachment
+    ) {
+
+        return """
+                File: %s
+                Type: %s
+                Size: %d bytes
+
+                Extracted Content:
+                %s
+                """.formatted(
+                attachment.getFileName(),
+                attachment.getContentType(),
+                attachment.getFileSize(),
+                attachment.getExtractedText()
         );
     }
 }

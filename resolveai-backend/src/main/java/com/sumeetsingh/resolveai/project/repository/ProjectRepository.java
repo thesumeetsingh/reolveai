@@ -1,6 +1,7 @@
 package com.sumeetsingh.resolveai.project.repository;
 
 import com.sumeetsingh.resolveai.project.entity.Project;
+import com.sumeetsingh.resolveai.project.entity.ProjectStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -13,4 +14,5 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
     boolean existsByProjectCode(String projectCode);
 
     List<Project> findByOwnerUserId(Long userId);
+    long countByStatus(ProjectStatus status);
 }

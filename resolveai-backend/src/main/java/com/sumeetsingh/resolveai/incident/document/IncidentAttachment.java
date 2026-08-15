@@ -31,4 +31,5 @@ public class IncidentAttachment {
     private String gridFsFileId;
 
     private LocalDateTime uploadedAt;
+    private String extractedText;
 }

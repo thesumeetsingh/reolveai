@@ -28,4 +28,9 @@ public interface ProjectMemberRepository
             Long projectId,
             Long userId
     );
+
+    long countByUserUserIdAndStatus(
+            Long userId,
+            ProjectMemberStatus status
+    );
 }
