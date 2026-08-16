@@ -83,3 +83,29 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+.route-loading {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.route-loading-spinner {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-top-color: var(--text-primary);
+  border-radius: 50%;
+  animation: resolveai-route-spin 0.7s linear infinite;
+}
+
+@keyframes resolveai-route-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

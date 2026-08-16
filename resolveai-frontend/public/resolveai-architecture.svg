@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-labelledby="title desc">
+  <title id="title">ResolveAI backend architecture</title>
+  <desc id="desc">A layered architecture showing React frontend, Spring Boot REST APIs, Spring Security JWT, MySQL, MongoDB, Spring AI, Ollama Qwen and Apache Tika.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0d0d0d"/>
+      <stop offset="1" stop-color="#171717"/>
+    </linearGradient>
+    <linearGradient id="line" x1="0" x2="1">
+      <stop offset="0" stop-color="#666"/>
+      <stop offset="1" stop-color="#aaa"/>
+    </linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1200" height="480" rx="22" fill="url(#bg)"/>
+  <g opacity=".16" stroke="#777">
+    <path d="M0 80h1200M0 160h1200M0 240h1200M0 320h1200M0 400h1200"/>
+    <path d="M100 0v480M200 0v480M300 0v480M400 0v480M500 0v480M600 0v480M700 0v480M800 0v480M900 0v480M1000 0v480M1100 0v480"/>
+  </g>
+  <style>
+    .box{fill:#111;stroke:#343434;stroke-width:1.5}
+    .title{fill:#f4f4f4;font:600 17px Inter,Arial,sans-serif}
+    .text{fill:#999;font:12px Inter,Arial,sans-serif}
+    .small{fill:#666;font:10px ui-monospace,monospace}
+    .arrow{stroke:url(#line);stroke-width:2;fill:none}
+  </style>
+
+  <text x="50" y="42" class="small">RESOLVEAI / BACKEND ARCHITECTURE</text>
+
+  <rect x="50" y="90" width="210" height="100" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="70" y="122" class="title">React frontend</text>
+  <text x="70" y="146" class="text">Vite + React</text>
+  <text x="70" y="166" class="small">workspace / incident UI</text>
+
+  <rect x="325" y="90" width="270" height="100" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="345" y="122" class="title">Spring Boot REST API</text>
+  <text x="345" y="146" class="text">Spring MVC controllers</text>
+  <text x="345" y="166" class="small">project / support / incident / admin / ai</text>
+
+  <rect x="660" y="90" width="210" height="100" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="680" y="122" class="title">Spring Security</text>
+  <text x="680" y="146" class="text">JWT resource server</text>
+  <text x="680" y="166" class="small">authentication + role authorization</text>
+
+  <rect x="935" y="90" width="215" height="100" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="955" y="122" class="title">Domain services</text>
+  <text x="955" y="146" class="text">Layered business logic</text>
+  <text x="955" y="166" class="small">users / projects / incidents / ai</text>
+
+  <path d="M260 140h65M595 140h65M870 140h65" class="arrow"/>
+  <path d="M292 136l7 4-7 4M627 136l7 4-7 4M902 136l7 4-7 4" fill="#aaa"/>
+
+  <rect x="80" y="270" width="270" height="120" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="105" y="305" class="title">MySQL</text>
+  <text x="105" y="330" class="text">JPA / Hibernate ORM</text>
+  <text x="105" y="352" class="small">users • roles • projects</text>
+  <text x="105" y="370" class="small">members • services • technologies</text>
+
+  <rect x="465" y="270" width="270" height="120" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="490" y="305" class="title">MongoDB</text>
+  <text x="490" y="330" class="text">Operational evidence</text>
+  <text x="490" y="352" class="small">incident logs • activities</text>
+  <text x="490" y="370" class="small">attachments • AI messages</text>
+
+  <rect x="850" y="270" width="270" height="120" rx="14" class="box" filter="url(#shadow)"/>
+  <text x="875" y="305" class="title">Spring AI + Ollama</text>
+  <text x="875" y="330" class="text">Local Qwen 2.5:7b</text>
+  <text x="875" y="352" class="small">context assembly + investigation</text>
+  <text x="875" y="370" class="small">project + incident + evidence</text>
+
+  <path d="M1035 190v80M760 190v80M215 190v80" class="arrow"/>
+  <path d="M1031 263l4 7 4-7M756 263l4 7 4-7M211 263l4 7 4-7" fill="#aaa"/>
+
+  <rect x="465" y="425" width="270" height="35" rx="9" fill="#151515" stroke="#343434"/>
+  <text x="600" y="447" text-anchor="middle" class="small">Apache Tika → attachment text extraction</text>
+</svg>

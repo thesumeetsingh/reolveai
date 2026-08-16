@@ -472,3 +472,50 @@
     padding: 16px;
   }
 }
+/* Dynamic backend status */
+.sidebar-status {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sidebar-status.status-operational .status-dot {
+  background: var(--success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--success) 10%, transparent);
+}
+
+.sidebar-status.status-checking .status-dot {
+  background: var(--warning);
+  animation: app-status-pulse 1.2s ease-in-out infinite;
+}
+
+.sidebar-status.status-degraded .status-dot,
+.sidebar-status.status-offline .status-dot {
+  background: var(--danger);
+}
+
+.sidebar-status:hover {
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.status-spinner {
+  width: 10px;
+  height: 10px;
+  margin-left: auto;
+  border: 1px solid var(--border);
+  border-top-color: var(--text-secondary);
+  border-radius: 50%;
+  animation: app-status-spin 0.7s linear infinite;
+}
+
+@keyframes app-status-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes app-status-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
