@@ -1058,3 +1058,74 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+
+/* Controlled evidence and AI conversation workspaces */
+
+.evidence-list {
+  max-height: 560px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+}
+
+.evidence-item {
+  min-width: 0;
+}
+
+.evidence-item pre {
+  max-height: 300px;
+  overflow: auto;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  scrollbar-gutter: stable;
+}
+
+.ai-investigation-body {
+  min-width: 0;
+}
+
+.ai-messages {
+  min-height: 140px;
+  max-height: 520px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  scrollbar-gutter: stable;
+  padding: 2px 3px 4px 0;
+}
+
+.ai-message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.ai-message-content {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.ai-markdown-code-block {
+  max-width: 100%;
+}
+
+.ai-markdown-code-block pre {
+  max-width: 100%;
+}
+
+@media (max-width: 700px) {
+  .ai-messages {
+    max-height: 440px;
+  }
+
+  .evidence-list {
+    max-height: 480px;
+  }
+
+  .evidence-item pre {
+    max-height: 260px;
+  }
+}
