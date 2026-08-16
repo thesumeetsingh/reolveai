@@ -714,8 +714,6 @@ Before committing screenshots:
 
 ---
 
-## GitHub README Image Section
-
 ## Screenshots
 
 ### Landing page
