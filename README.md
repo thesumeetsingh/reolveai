@@ -716,9 +716,6 @@ Before committing screenshots:
 
 ## GitHub README Image Section
 
-After taking the screenshots, add this section to the README:
-
-```markdown
 ## Screenshots
 
 ### Landing page
@@ -741,11 +738,11 @@ After taking the screenshots, add this section to the README:
 
 ### Administration
 ![ResolveAI administration](docs/screenshots/10-admin-dashboard.png)
-```
 
-GitHub will render these images directly from the repository after they are committed.
 
----
+
+
+
 
 ## Engineering Highlights
 
